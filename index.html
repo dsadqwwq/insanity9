@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Duel Protocol — Join the Battle</title>
+  <meta name="description" content="Join the battle — skill-based money matches on MegaETH." />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --ink:#090b0e; --ui:#e6ebf1;
+      --parch1:#e1d3b3; --parch2:#cdbb94; --parch3:#b7a37b;
+      --stone:#3a2f25; --stone-hi:#564737; --stone-lo:#2a231b;
+      --green:#35e06b; --red:#b64b3a;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--ink);color:var(--ui)}
+    .bg{position:fixed;inset:0;z-index:-2}
+    .bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.9) saturate(1.05);image-rendering:pixelated}
+    .bg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.7))}
+    /* place panel lower on the screen */
+    .frame{min-height:100%;display:grid;align-items:end;justify-items:center;padding:0 5vw 8vh}
+    /* compact RS-style box */
+    .panel{
+      width:min(560px,95%);
+      border-radius:6px;
+      background:
+        radial-gradient(120% 120% at 10% 0%, rgba(255,255,255,.22), transparent 45%) ,
+        linear-gradient(180deg, var(--parch1), var(--parch2) 55%, var(--parch3));
+      padding:12px 12px 8px;
+      border:3px solid #61523d;
+      box-shadow:inset 0 0 0 2px rgba(255,255,255,.22), 0 18px 70px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.5);
+      image-rendering: pixelated;
+    }
+    .viewport{
+      background:
+        repeating-linear-gradient(0deg, rgba(0,0,0,.05) 0 2px, transparent 2px 4px),
+        radial-gradient(180% 120% at 50% 10%, rgba(255,255,255,.18), rgba(0,0,0,.0) 40%);
+      min-height:150px;
+      border:2px solid #7d6a4c;
+      border-radius:4px;
+      padding:10px;
+      color:#2b2016;
+      text-shadow:0 1px 0 rgba(255,255,255,.3);
+      font-size:16px;
+      line-height:1.3;
+    }
+    .sys{margin-bottom:6px}
+    .line{display:flex;gap:8px;align-items:center}
+    .label{color:#2b2016; font-weight:700; min-width:64px}
+    .email{flex:1; padding:8px 10px; border-radius:4px; border:2px inset #a5906b; background:#f2e6c8; color:#2b2016; outline:none}
+    .email:focus{box-shadow:0 0 0 3px rgba(53,224,107,.25)}
+    /* button bar compact */
+    .bar{display:flex;gap:8px;justify-content:space-between;padding-top:8px}
+    .tabs{display:flex;gap:6px}
+    .pill{background:linear-gradient(180deg,#4a3c2e,#2f271f); border:2px solid #5f4e3b; color:#9fe8b5; border-radius:12px; padding:4px 8px; font-size:11px}
+    .btn{
+      background:linear-gradient(#554533,#3c3126);
+      border:2px solid #7a664a; border-bottom-color:#2a231b; border-right-color:#2a231b;
+      color:#dcd2bf; padding:7px 12px; border-radius:8px; font-weight:800; letter-spacing:.06em; text-transform:uppercase;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.15); cursor:pointer;
+    }
+    .btn:hover{filter:brightness(1.1)}
+    .status{margin-top:6px; font-size:13px; color:#2b2016}
+    .ok{color:var(--green)} .bad{color:var(--red)}
+    .logo{position:fixed;left:20px;top:16px;font-weight:800;letter-spacing:.06em;font-size:18px;opacity:.9}
+    .footer{position:fixed;right:20px;bottom:14px;font-size:12px;color:#b8c1cc}
+    @media (max-width:560px){ .panel{width:92%} .viewport{min-height:130px} .label{min-width:auto} }
+  </style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true">
+    <!-- Use relative path to guarantee it loads when deployed at root -->
+    <img src="./duel-wildy-4k.jpg" alt="Pixel-art wilderness split background" />
+  </div>
+  <div class="logo">DUEL PROTOCOL</div>
+
+  <main class="frame">
+    <section class="panel" role="region" aria-label="Rune-style dialogue">
+      <div class="viewport">
+        <div class="sys">Welcome to the arena.</div>
+        <div class="line"><div class="label">Email:</div><input id="email" type="email" class="email" placeholder="name@example.com"></div>
+      </div>
+      <div class="bar">
+        <div class="tabs">
+          <div class="pill">Public <span style="color:#35e06b">On</span></div>
+          <div class="pill">Private <span style="color:#35e06b">On</span></div>
+          <div class="pill">Trade <span style="color:#35e06b">On</span></div>
+        </div>
+        <button class="btn" id="join">Join</button>
+      </div>
+      <div id="msg" class="status" role="status" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <div class="footer">© <span id="y"></span> Duel Protocol</div>
+
+<script>
+  const y=document.getElementById('y'); y.textContent = new Date().getFullYear();
+  const btn=document.getElementById('join'); const emailEl=document.getElementById('email'); const msg=document.getElementById('msg');
+  btn.addEventListener('click', async ()=>{
+    const email = emailEl.value.trim();
+    if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)){ msg.textContent='Invalid email.'; msg.className='status bad'; return; }
+    try{
+      const res = await fetch('https://example.com/api/subscribe', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email, source:'rs-dialog-v2' })});
+      if(!res.ok) throw new Error('net');
+      msg.textContent='Got it! Check your inbox soon.'; msg.className='status ok'; emailEl.value='';
+    }catch(e){
+      const key='duel-waitlist'; const list = JSON.parse(localStorage.getItem(key)||'[]'); list.push({ email, ts:Date.now() }); localStorage.setItem(key, JSON.stringify(list));
+      msg.textContent='Saved locally (wire your endpoint later).'; msg.className='status ok';
+    }
+  });
+</script>
+</body>
+</html>
